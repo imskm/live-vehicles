@@ -62,6 +62,21 @@ function driver_json_array_to_php_array(array $drivers): array
 	return $result;
 }
 
+/**
+ * @return Assoc array of drivers keyed by vehicle_type_id
+ */
+function group_drivers_by_vehicle_type(array $drivers)
+{
+	$result = [];
+	foreach ($drivers as $d) {
+		$result[$d->vehicle_type_id][] = $d;
+	}
+
+	return $result;
+}
+
+
+
 
 /* -------------------------------------------------------------
  *  Request handlers
@@ -79,6 +94,12 @@ function handle_drivers_nearby($request, $resolve, $reject)
 		(float) $params['lat'],
 		(float) $params['lng'],
 	);
+
+	if (isset($params['groupby']) && $params['groupby'] === 'vehicle_type') {
+		$result = group_drivers_by_vehicle_type($result);
+		echo "--------------------\n";
+		var_dump($result);
+	}
 
 	$data = [
 		'data' => $result,
