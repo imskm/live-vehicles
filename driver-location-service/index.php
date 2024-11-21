@@ -60,5 +60,5 @@ $http_server = new React\Http\HttpServer(function (Psr\Http\Message\ServerReques
 	});
 });
 
-$socket = new React\Socket\SocketServer('127.0.0.1:8000');
+$socket = new React\Socket\SocketServer('127.0.0.1:8001');
 $http_server->listen($socket);
