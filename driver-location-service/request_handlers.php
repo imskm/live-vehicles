@@ -56,7 +56,7 @@ function driver_json_array_to_php_array(array $drivers): array
 {
 	$result = [];
 	foreach ($drivers as $key => $json) {
-		$result[$key] = json_decode($json);
+		$result['drivers'][] = json_decode($json);
 	}
 
 	return $result;
@@ -96,7 +96,7 @@ function handle_drivers_nearby($request, $resolve, $reject)
 	);
 
 	if (isset($params['groupby']) && $params['groupby'] === 'vehicle_type') {
-		$result = group_drivers_by_vehicle_type($result);
+		$result = group_drivers_by_vehicle_type($result['drivers']);
 		echo "--------------------\n";
 		var_dump($result);
 	}
