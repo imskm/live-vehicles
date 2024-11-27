@@ -163,13 +163,24 @@ function handle_driver_location_update($request, $resolve, $reject)
 		return;
 	}
 
+	// @NOTE There can be fullname of the lat and lng sent instead of short form
+	// need to handle it.
+	if (isset($driver->location->latitude)) {
+		$driver->location->lat = $driver->location->latitude;
+		unset($driver->location->latitude);
+	}
+	if (isset($driver->location->longitude)) {
+		$driver->location->lng = $driver->location->longitude;
+		unset($driver->location->longitude);
+	}
+
 	$key = driver_location_key($driver->id);
 
 	/**
 	 * Max TTL for driver last location is 1hr.
 	 * Driver not active for continue 1hr will be marked as offline and removed.
 	 */
-	$redis->hSet(DRIVER_LOCATION_HT_NAME, $key, $payload);
+	$redis->hSet(DRIVER_LOCATION_HT_NAME, $key, json_encode($driver));
 
 	$ret = $redis->hGet(DRIVER_LOCATION_HT_NAME, $key);
 
