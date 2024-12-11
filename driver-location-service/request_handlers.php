@@ -36,6 +36,16 @@ function set_online_driver_geolocation(float $lat, float $lng, int $driver_id): 
 	echo "Number of elements added in geospatial key: {$result}\n";
 }
 
+function del_online_driver_geolocation(int $driver_id): void
+{
+	global $redis;
+
+	$driver_location_key_in_ht = driver_location_key($driver_id);
+	$result = $redis->zRem(DRIVER_GEOCORD_STORE_NAME, $driver_location_key_in_ht);
+
+	echo "Removed driver from geospatial key: driver_id={$driver_id}, result={$result}";
+}
+
 function get_online_nearby_drivers_geolocation(float $lat, float $lng, float $radius = 2.0, string $unit = 'km'): array
 {
 	global $redis;
@@ -52,9 +62,16 @@ function get_online_nearby_drivers_geolocation(float $lat, float $lng, float $ra
 	return $nearby_drivers;
 }
 
-function driver_json_array_to_php_array(array $drivers): array
+function driver_json_array_to_php_array(mixed $drivers): array
 {
-	$result = [];
+	$result = [
+		'drivers' => [],
+	];
+
+	if ($drivers === false) {
+		return $result;
+	}
+
 	foreach ($drivers as $key => $json) {
 		$result['drivers'][] = json_decode($json);
 	}
@@ -97,8 +114,6 @@ function handle_drivers_nearby($request, $resolve, $reject)
 
 	if (isset($params['groupby']) && $params['groupby'] === 'vehicle_type') {
 		$result = group_drivers_by_vehicle_type($result['drivers']);
-		echo "--------------------\n";
-		var_dump($result);
 	}
 
 	$data = [
@@ -194,6 +209,33 @@ function handle_driver_location_update($request, $resolve, $reject)
 	];
 
 	// It requires exactly 1 arg
+	$resolve($data);
+}
+
+function handle_drivers_remove($request, $resolve, $reject)
+{
+	global $redis;
+
+	$payload = (string) $request->getBody();
+	$driver = json_decode($payload);
+	if ($driver === false) {
+		return;
+	}
+
+	$key = driver_location_key($driver->id);
+
+	$ret = $redis->hDel(DRIVER_LOCATION_HT_NAME, $key);
+	if ($ret === false) {
+		echo "handle_drivers_remove: {$key} not found\n";
+	}
+
+	// Remove the driver geolocation from geospatial data
+	del_online_driver_geolocation($driver->id);
+
+	$data = [
+		'data' => null,
+	];
+
 	$resolve($data);
 }
 

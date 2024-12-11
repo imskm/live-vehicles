@@ -5,5 +5,6 @@ return [
 	'/drivers/location-update' 	=> "handle_driver_location_update",
 	'/drivers/all' 				=> "handle_all_online_drivers",
 	'/drivers/nearby' 			=> "handle_drivers_nearby",
+	'/drivers/remove' 			=> "handle_drivers_remove",
 ];
 
