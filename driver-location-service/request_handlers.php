@@ -110,6 +110,7 @@ function handle_drivers_nearby($request, $resolve, $reject)
 	$result = get_online_nearby_drivers_geolocation(
 		(float) $params['lat'],
 		(float) $params['lng'],
+		$radius = 5.0,
 	);
 
 	if (isset($params['groupby']) && $params['groupby'] === 'vehicle_type') {
